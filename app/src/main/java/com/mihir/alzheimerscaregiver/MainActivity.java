@@ -131,17 +131,19 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
         // Emergency Card
         emergencyCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
-                showToast("Emergency Contacts");
 
-                // TODO: Navigate to EmergencyActivity or show emergency dialog
+                // Create intent to start EmergencyActivity
+                Intent intent = new Intent(MainActivity.this, EmergencyActivity.class);
+                startActivity(intent);
             }
         });
+
+
 
         // Settings Card
         settingsCard.setOnClickListener(new View.OnClickListener() {
