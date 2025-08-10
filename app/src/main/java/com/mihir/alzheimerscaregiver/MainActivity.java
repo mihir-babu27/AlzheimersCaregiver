@@ -123,10 +123,12 @@ public class MainActivity extends AppCompatActivity {
         photosCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Add haptic feedback
                 v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
-                showToast("Opening Family Photos...");
 
-                // TODO: Navigate to PhotosActivity
+                // Create intent to start PhotosActivity
+                Intent intent = new Intent(MainActivity.this, PhotosActivity.class);
+                startActivity(intent);
             }
         });
 
