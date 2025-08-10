@@ -99,10 +99,12 @@ public class MainActivity extends AppCompatActivity {
         tasksCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Add haptic feedback
                 v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
-                showToast("Opening Daily Tasks...");
 
-                // TODO: Navigate to TasksActivity
+                // Create intent to start TasksActivity
+                Intent intent = new Intent(MainActivity.this, TasksActivity.class);
+                startActivity(intent);
             }
         });
 
