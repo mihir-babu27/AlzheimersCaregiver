@@ -113,9 +113,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
-                showToast("Starting Memory Games...");
 
-                // TODO: Navigate to MemoryGamesActivity
+                // Navigate to GameSelectionActivity
+                Intent intent = new Intent(MainActivity.this, GameSelectionActivity.class);
+                startActivity(intent);
             }
         });
 

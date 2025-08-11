@@ -54,6 +54,41 @@
             android:name=".EmergencyActivity"
             android:parentActivityName=".MainActivity"
             android:label="Emergency Contacts" />
+        <!-- Game Selection Activity -->
+        <activity
+            android:name=".GameSelectionActivity"
+            android:label="Select a Game"
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
+        <!-- Matching Game Activity -->
+        <activity
+            android:name=".MatchingGameActivity"
+            android:label="Memory Game"
+            android:parentActivityName=".GameSelectionActivity"
+            android:screenOrientation="portrait"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".GameSelectionActivity" />
+        </activity>
+
+        <!-- Sequence Game Activity -->
+        <activity
+            android:name=".SequenceGameActivity"
+            android:label="Sequence Memory"
+            android:parentActivityName=".GameSelectionActivity"
+            android:screenOrientation="portrait"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".GameSelectionActivity" />
+        </activity>
     </application>
 
 </manifest>
