@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "AlzheimersCaregiver"
 include ':app'
+include ':face_recognition'

@@ -8,9 +8,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-import java.text.SimpleDateFormat;
+
 import java.util.Calendar;
-import java.util.Locale;
+
+import com.mihir.alzheimerscaregiver.face_recognition.FaceRecognitionActivity;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -128,8 +130,9 @@ public class MainActivity extends AppCompatActivity {
                 v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
 
                 // Create intent to start PhotosActivity
-                Intent intent = new Intent(MainActivity.this, PhotosActivity.class);
+                Intent intent = new Intent(MainActivity.this, FaceRecognitionActivity.class);
                 startActivity(intent);
+
             }
         });
         // Emergency Card
