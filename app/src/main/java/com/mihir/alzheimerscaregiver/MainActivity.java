@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -19,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
     // UI Elements
     private TextView welcomeText;
     private TextView nameText;
-    private CardView medicationCard, tasksCard, memoryCard, photosCard, emergencyCard, settingsCard;
+    private CardView medicationCard, tasksCard, memoryCard, photosCard, emergencyCard;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
         memoryCard = findViewById(R.id.memoryCard);
         photosCard = findViewById(R.id.photosCard);
         emergencyCard = findViewById(R.id.emergencyCard);
-        settingsCard = findViewById(R.id.settingsCard);
     }
 
     /**
@@ -71,8 +71,13 @@ public class MainActivity extends AppCompatActivity {
 
         welcomeText.setText(greeting);
 
-        // You can customize this name or get it from user preferences
-        nameText.setText("Sarah");
+        // Read name from preferences
+        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        String userName = prefs.getString("user_name", "");
+        if (userName == null || userName.trim().isEmpty()) {
+            userName = "Friend";
+        }
+        nameText.setText(userName);
     }
 
     /**
@@ -87,13 +92,10 @@ public class MainActivity extends AppCompatActivity {
                 // Add haptic feedback
                 v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
 
-                // Show toast message (we'll replace this with actual navigation later)
                 showToast("Opening Medication Reminders...");
-
-                Intent intent = new Intent(MainActivity.this, MedicationActivity.class);
+                Intent intent = new Intent(MainActivity.this, RemindersActivity.class);
+                intent.putExtra(RemindersActivity.EXTRA_MEDICATION_MODE, true);
                 startActivity(intent);
-                // Intent intent = new Intent(MainActivity.this, MedicationActivity.class);
-                // startActivity(intent);
             }
         });
 
@@ -122,14 +124,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Family Photos Card
+        // Face Recognition Card
         photosCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Add haptic feedback
                 v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
 
-                // Create intent to start PhotosActivity
+                // Open Face Recognition
                 Intent intent = new Intent(MainActivity.this, FaceRecognitionActivity.class);
                 startActivity(intent);
 
@@ -144,19 +146,6 @@ public class MainActivity extends AppCompatActivity {
                 // Create intent to start EmergencyActivity
                 Intent intent = new Intent(MainActivity.this, EmergencyActivity.class);
                 startActivity(intent);
-            }
-        });
-
-
-
-        // Settings Card
-        settingsCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
-                showToast("Opening Settings...");
-
-                // TODO: Navigate to SettingsActivity
             }
         });
     }
@@ -179,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Update welcome message when returning to the app
+        // Update welcome and name when returning to the app
         setupWelcomeMessage();
 
         // You could also refresh task counts, medication reminders, etc.

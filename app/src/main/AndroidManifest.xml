@@ -22,7 +22,11 @@
             android:name=".MedicationActivity"
             android:parentActivityName=".MainActivity" />
         <activity
-            android:name=".MainActivity"
+            android:name=".RemindersActivity"
+            android:label="Reminders"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".SplashGateActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,6 +34,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".MainActivity" />
+        <activity android:name=".OnboardingActivity" />
         <!-- ADD THIS: Tasks Activity -->
         <activity
             android:name=".TasksActivity"
@@ -56,6 +62,8 @@
             android:name=".EmergencyActivity"
             android:parentActivityName=".MainActivity"
             android:label="Emergency Contacts" />
+        <receiver android:name=".notifications.ReminderReceiver" />
+        <receiver android:name=".notifications.TaskReminderReceiver" />
         <!-- Game Selection Activity -->
         <activity
             android:name=".GameSelectionActivity"

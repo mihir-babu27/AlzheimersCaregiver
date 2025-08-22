@@ -1,26 +1,37 @@
 package com.mihir.alzheimerscaregiver;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.mihir.alzheimerscaregiver.data.entity.TaskEntity;
+import com.mihir.alzheimerscaregiver.notifications.TaskReminderScheduler;
+import com.mihir.alzheimerscaregiver.ui.tasks.TasksEntityAdapter;
+import com.mihir.alzheimerscaregiver.ui.viewmodel.TaskViewModel;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
-public class TasksActivity extends AppCompatActivity implements TasksAdapter.OnTaskInteractionListener {
+public class TasksActivity extends AppCompatActivity implements TasksAdapter.OnTaskInteractionListener, TasksEntityAdapter.OnTaskEntityInteractionListener {
 
     // UI Elements
     private ImageButton backButton;
@@ -28,9 +39,9 @@ public class TasksActivity extends AppCompatActivity implements TasksAdapter.OnT
     private RecyclerView tasksRecyclerView;
     private FloatingActionButton addTaskFab;
 
-    // Adapter and data
-    private TasksAdapter tasksAdapter;
-    private List<Task> taskList;
+    // Adapter and data (Room version)
+    private TasksEntityAdapter entityAdapter;
+    private TaskViewModel taskViewModel;
 
     // Handler for updating time
     private Handler timeHandler;
@@ -50,10 +61,7 @@ public class TasksActivity extends AppCompatActivity implements TasksAdapter.OnT
         // Start time updates
         startTimeUpdates();
 
-        // Create sample task list
-        createSampleTasks();
-
-        // Initialize RecyclerView and adapter
+        // Initialize RecyclerView and adapter (Room-backed)
         setupRecyclerView();
 
         // Set up click listeners
@@ -113,40 +121,40 @@ public class TasksActivity extends AppCompatActivity implements TasksAdapter.OnT
         currentTimeText.setText(currentTime);
     }
 
-    /**
-     * Create sample tasks for demonstration
-     */
-    private void createSampleTasks() {
-        taskList = new ArrayList<>();
-
-        // Add sample tasks - some completed, some not
-        taskList.add(new Task("Take morning walk", false));
-        taskList.add(new Task("Read a book for 30 minutes", true));
-        taskList.add(new Task("Call family member", false));
-        taskList.add(new Task("Do gentle stretching exercises", false));
-        taskList.add(new Task("Write in journal", true));
-        taskList.add(new Task("Take afternoon medication", false));
-        taskList.add(new Task("Water the plants", false));
-        taskList.add(new Task("Listen to favorite music", true));
-        taskList.add(new Task("Prepare and eat healthy lunch", false));
-        taskList.add(new Task("Practice memory exercises", false));
-    }
+    // Sample tasks creation removed (now using Room)
 
     /**
      * Set up RecyclerView with adapter
      */
     private void setupRecyclerView() {
-        // Create and set layout manager
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         tasksRecyclerView.setLayoutManager(layoutManager);
 
-        // Create adapter with task list and interaction listener
-        tasksAdapter = new TasksAdapter(taskList, this);
-        tasksRecyclerView.setAdapter(tasksAdapter);
+        entityAdapter = new TasksEntityAdapter();
+        entityAdapter.setListener(this);
+        tasksRecyclerView.setAdapter(entityAdapter);
 
-        // Optional: Add item decoration for better spacing
-        // You can uncomment this if you want additional spacing between items
-        // tasksRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        // Swipe to delete
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                TaskEntity task = entityAdapter.getItem(position);
+                confirmDeleteTask(task, position);
+            }
+        });
+        itemTouchHelper.attachToRecyclerView(tasksRecyclerView);
+
+        taskViewModel = new ViewModelProvider(this).get(TaskViewModel.class);
+        taskViewModel.getTodayTasks().observe(this, tasks -> {
+            entityAdapter.submitList(tasks);
+            updateTasksRemainingCounter();
+        });
     }
 
     /**
@@ -168,12 +176,7 @@ public class TasksActivity extends AppCompatActivity implements TasksAdapter.OnT
             public void onClick(View v) {
                 // Provide haptic feedback
                 v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
-
-                // Show toast message for now
-                showToast("Add task feature coming soon!");
-
-                // TODO: Implement add task functionality
-                // This could open a dialog or new activity to add tasks
+                showAddOrEditTaskDialog(null);
             }
         });
     }
@@ -182,16 +185,18 @@ public class TasksActivity extends AppCompatActivity implements TasksAdapter.OnT
      * Update the tasks remaining counter
      */
     private void updateTasksRemainingCounter() {
-        if (tasksAdapter != null) {
-            int pendingTasks = tasksAdapter.getPendingTasksCount();
-            int totalTasks = tasksAdapter.getItemCount();
-
-            if (pendingTasks == 0) {
+        if (entityAdapter != null) {
+            int total = entityAdapter.getItemCount();
+            int pending = 0;
+            for (int i = 0; i < total; i++) {
+                if (!entityAdapter.getItem(i).isCompleted) pending++;
+            }
+            if (pending == 0) {
                 tasksRemainingText.setText("All done! 🎉");
-            } else if (pendingTasks == 1) {
+            } else if (pending == 1) {
                 tasksRemainingText.setText("1 remaining");
             } else {
-                tasksRemainingText.setText(pendingTasks + " remaining");
+                tasksRemainingText.setText(pending + " remaining");
             }
         }
     }
@@ -203,7 +208,7 @@ public class TasksActivity extends AppCompatActivity implements TasksAdapter.OnT
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-    // TasksAdapter.OnTaskInteractionListener implementation
+    // Legacy TasksAdapter listener (unused now), kept for compatibility
 
     @Override
     public void onTaskCompleted(Task task, int position) {
@@ -217,12 +222,6 @@ public class TasksActivity extends AppCompatActivity implements TasksAdapter.OnT
         // Update tasks remaining counter
         updateTasksRemainingCounter();
 
-        // You could also:
-        // - Save task status to database
-        // - Send notification to caregiver
-        // - Update progress tracking
-        // - Show encouraging messages for completing tasks
-
         // Simulate caregiver notification for completed tasks
         if (task.isCompleted()) {
             simulateCaregiverNotification(task);
@@ -232,17 +231,33 @@ public class TasksActivity extends AppCompatActivity implements TasksAdapter.OnT
     @Override
     public void onTaskClicked(Task task, int position) {
         // Handle task item click (not checkbox click)
-        // This could be used for editing tasks, showing details, etc.
         showToast("Task: " + task.getTaskName());
+    }
 
-        // TODO: Implement task detail view or edit functionality
+    // New Room-backed adapter callbacks
+    @Override
+    public void onCompletionToggled(TaskEntity task) {
+        taskViewModel.markCompleted(task.id, task.isCompleted);
+        if (task.isCompleted) {
+            simulateCaregiverNotification(new Task(task.name, true));
+        }
+        updateTasksRemainingCounter();
+    }
+
+    @Override
+    public void onItemClicked(TaskEntity task) {
+        showAddOrEditTaskDialog(task);
+    }
+
+    @Override
+    public void onItemSwipedToDelete(TaskEntity task, int position) {
+        confirmDeleteTask(task, position);
     }
 
     /**
      * Simulate sending notification to caregiver when task is completed
      */
     private void simulateCaregiverNotification(Task task) {
-        // In a real app, this would send a notification to the caregiver's device
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -256,13 +271,8 @@ public class TasksActivity extends AppCompatActivity implements TasksAdapter.OnT
      */
     public void addNewTask(String taskName) {
         if (taskName != null && !taskName.trim().isEmpty()) {
-            Task newTask = new Task(taskName.trim(), false);
-            tasksAdapter.addTask(newTask);
-            updateTasksRemainingCounter();
-
-            // Scroll to the new task
-            tasksRecyclerView.scrollToPosition(tasksAdapter.getItemCount() - 1);
-
+            TaskEntity entity = new TaskEntity(taskName.trim(), null, false, null, null, false, null);
+            taskViewModel.insert(entity);
             showToast("New task added: " + taskName);
         }
     }
@@ -298,5 +308,113 @@ public class TasksActivity extends AppCompatActivity implements TasksAdapter.OnT
         // Update time and task counter when returning to this activity
         updateCurrentTime();
         updateTasksRemainingCounter();
+    }
+
+    private void confirmDeleteTask(TaskEntity task, int position) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete task")
+                .setMessage("Are you sure you want to delete this task?")
+                .setPositiveButton("Delete", (d, w) -> {
+                    taskViewModel.delete(task);
+                })
+                .setNegativeButton("Cancel", (d, w) -> {
+                    // refresh list to undo swipe
+                    entityAdapter.notifyItemChanged(position);
+                })
+                .setOnCancelListener(dialog -> entityAdapter.notifyItemChanged(position))
+                .show();
+    }
+
+    private void showAddOrEditTaskDialog(TaskEntity existing) {
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_edit_task, null, false);
+        EditText inputName = view.findViewById(R.id.inputTaskName);
+        EditText inputDescription = view.findViewById(R.id.inputTaskDescription);
+        EditText inputCategory = view.findViewById(R.id.inputTaskCategory);
+        EditText inputTime = view.findViewById(R.id.inputTaskTime);
+        CheckBox checkRecurring = view.findViewById(R.id.checkRecurring);
+        EditText inputRecurrence = view.findViewById(R.id.inputRecurrenceRule);
+
+        final Long[] scheduledAt = {null};
+
+        if (existing != null) {
+            inputName.setText(existing.name);
+            inputDescription.setText(existing.description);
+            inputCategory.setText(existing.category);
+            checkRecurring.setChecked(existing.isRecurring);
+            inputRecurrence.setEnabled(existing.isRecurring);
+            inputRecurrence.setText(existing.recurrenceRule);
+            if (existing.scheduledTimeEpochMillis != null) {
+                scheduledAt[0] = existing.scheduledTimeEpochMillis;
+                inputTime.setText(new SimpleDateFormat("EEE, MMM d h:mm a", Locale.getDefault())
+                        .format(new Date(existing.scheduledTimeEpochMillis)));
+            }
+        }
+
+        checkRecurring.setOnCheckedChangeListener((buttonView, isChecked) -> inputRecurrence.setEnabled(isChecked));
+
+        inputTime.setOnClickListener(v -> pickDateTime(scheduledAt, inputTime));
+
+        new AlertDialog.Builder(this)
+                .setTitle(existing == null ? "Add task" : "Edit task")
+                .setView(view)
+                .setPositiveButton(existing == null ? "Add" : "Save", (dialog, which) -> {
+                    String name = inputName.getText().toString().trim();
+                    if (TextUtils.isEmpty(name)) {
+                        showToast("Task name required");
+                        return;
+                    }
+                    String desc = inputDescription.getText().toString().trim();
+                    String cat = inputCategory.getText().toString().trim();
+                    boolean recurring = checkRecurring.isChecked();
+                    String rule = inputRecurrence.getText().toString().trim();
+
+                    if (existing == null) {
+                        TaskEntity entity = new TaskEntity(name, emptyToNull(desc), false, emptyToNull(cat), scheduledAt[0], recurring, emptyToNull(rule));
+                        taskViewModel.insert(entity);
+                        if (scheduledAt[0] != null) {
+                            TaskReminderScheduler.schedule(this, scheduledAt[0], name, desc);
+                        }
+                    } else {
+                        existing.name = name;
+                        existing.description = emptyToNull(desc);
+                        existing.category = emptyToNull(cat);
+                        existing.scheduledTimeEpochMillis = scheduledAt[0];
+                        existing.isRecurring = recurring;
+                        existing.recurrenceRule = emptyToNull(rule);
+                        taskViewModel.update(existing);
+                        if (scheduledAt[0] != null) {
+                            TaskReminderScheduler.schedule(this, scheduledAt[0], name, desc);
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void pickDateTime(Long[] scheduledAt, EditText inputTime) {
+        Calendar now = Calendar.getInstance();
+        DatePickerDialog datePicker = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+            Calendar selected = Calendar.getInstance();
+            selected.set(Calendar.YEAR, year);
+            selected.set(Calendar.MONTH, month);
+            selected.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+            TimePickerDialog timePicker = new TimePickerDialog(this, (timeView, hourOfDay, minute) -> {
+                selected.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                selected.set(Calendar.MINUTE, minute);
+                selected.set(Calendar.SECOND, 0);
+                selected.set(Calendar.MILLISECOND, 0);
+
+                scheduledAt[0] = selected.getTimeInMillis();
+                inputTime.setText(new SimpleDateFormat("EEE, MMM d h:mm a", Locale.getDefault()).format(selected.getTime()));
+            }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), false);
+
+            timePicker.show();
+        }, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH));
+        datePicker.show();
+    }
+
+    private String emptyToNull(String s) {
+        return TextUtils.isEmpty(s) ? null : s;
     }
 }

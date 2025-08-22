@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/inputTaskName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Task name"
+        android:inputType="textCapSentences" />
+
+    <EditText
+        android:id="@+id/inputTaskDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Description (optional)"
+        android:layout_marginTop="8dp"
+        android:inputType="textCapSentences|textMultiLine" />
+
+    <EditText
+        android:id="@+id/inputTaskCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Category (e.g., Exercise)"
+        android:layout_marginTop="8dp"
+        android:inputType="textCapWords" />
+
+    <EditText
+        android:id="@+id/inputTaskTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Scheduled time (tap to pick)"
+        android:focusable="false"
+        android:clickable="true"
+        android:layout_marginTop="8dp" />
+
+    <CheckBox
+        android:id="@+id/checkRecurring"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recurring"
+        android:layout_marginTop="8dp" />
+
+    <EditText
+        android:id="@+id/inputRecurrenceRule"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Recurrence (e.g., DAILY, WEEKLY:MON,WED)"
+        android:layout_marginTop="8dp"
+        android:enabled="false" />
+
+</LinearLayout>
+
+
