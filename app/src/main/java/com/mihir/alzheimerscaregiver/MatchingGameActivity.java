@@ -289,7 +289,7 @@ public class MatchingGameActivity extends AppCompatActivity {
      */
     private void handleGameCompletion(int totalMoves) {
         // Update completion stats
-        String statsText = "Completed in " + totalMoves + " moves!\\n";
+        String statsText = "Completed in " + totalMoves + " moves! \n";
 
         // Calculate performance rating
         int totalPairs = gameAdapter.getTotalPairs();
@@ -371,9 +371,9 @@ public class MatchingGameActivity extends AppCompatActivity {
      * Get game statistics for sharing or display
      */
     private String getGameStats() {
-        return "Memory Game Stats:\\n" +
-                "Moves: " + gameAdapter.getMoveCount() + "\\n" +
-                "Pairs Found: " + gameAdapter.getMatchedPairs() + "/" + gameAdapter.getTotalPairs() + "\\n" +
+        return "Memory Game Stats: \n" +
+                "Moves: " + gameAdapter.getMoveCount() + "\n" +
+                "Pairs Found: " + gameAdapter.getMatchedPairs() + "/" + gameAdapter.getTotalPairs() + "\n" +
                 "Difficulty: " + (isEasyMode ? "Easy" : "Normal");
     }
 

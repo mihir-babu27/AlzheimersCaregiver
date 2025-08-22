@@ -75,8 +75,14 @@ public class ContactsEntityAdapter extends RecyclerView.Adapter<ContactsEntityAd
         }
 
         void bind(ContactEntity contact) {
-            String name = contact.name + (contact.isPrimary ? " (Primary)" : "");
-            contactNameText.setText(name);
+            String displayName = contact.name;
+            if (contact.relationship != null && !contact.relationship.isEmpty()) {
+                displayName += " (" + contact.relationship + ")";
+            }
+            if (contact.isPrimary) {
+                displayName += " (Primary)";
+            }
+            contactNameText.setText(displayName);
             phoneNumberText.setText(contact.phoneNumber);
 
             callButton.setOnClickListener(v -> {

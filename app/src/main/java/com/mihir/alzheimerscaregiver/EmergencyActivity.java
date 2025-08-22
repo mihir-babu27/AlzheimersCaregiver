@@ -253,18 +253,19 @@ public class EmergencyActivity extends AppCompatActivity implements ContactsEnti
                         existing.phoneNumber = phone;
                         existing.relationship = emptyToNull(relationship);
                         existing.isPrimary = isPrimary;
-                        contactViewModel.update(existing);
+                contactViewModel.update(existing);
                     }
                 })
                 .setNegativeButton("Cancel", null)
-                .setNeutralButton("Export CSV", (d, w) -> exportContactsCsv())
+                //.setNeutralButton("Export CSV", (d, w) -> exportContactsCsv())
+
                 .show();
     }
 
     private boolean isValidPhone(String phone) {
         if (TextUtils.isEmpty(phone)) return false;
         String digits = phone.replaceAll("[^0-9]", "");
-        return digits.length() >= 7 && digits.length() <= 15;
+        return digits.length() == 10;
     }
 
     private void exportContactsCsv() {
@@ -299,8 +300,7 @@ public class EmergencyActivity extends AppCompatActivity implements ContactsEnti
         String out = s.replace("\"", "\"\"");
         if (out.contains(",") || out.contains("\n") || out.contains("\r")) {
             return "\"" + out + "\"";
-        }
-        return out;
+        }return out;
     }
 
     private String emptyToNull(String s) { return TextUtils.isEmpty(s) ? null : s; }
