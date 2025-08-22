@@ -10,8 +10,7 @@ import androidx.room.PrimaryKey;
         tableName = "reminders",
         indices = {
                 @Index(value = {"scheduled_time_epoch_millis"}),
-                @Index(value = {"is_completed"}),
-                @Index(value = {"priority"})
+                @Index(value = {"is_completed"})
         }
 )
 public class ReminderEntity {
@@ -33,20 +32,15 @@ public class ReminderEntity {
     @ColumnInfo(name = "is_completed")
     public boolean isCompleted;
 
-    @ColumnInfo(name = "priority")
-    public int priority; // 0 = low, 1 = normal, 2 = high
-
-    public ReminderEntity(@NonNull String title,
-                          String description,
-                          Long scheduledTimeEpochMillis,
-                          boolean isCompleted,
-                          int priority) {
-        this.title = title;
-        this.description = description;
-        this.scheduledTimeEpochMillis = scheduledTimeEpochMillis;
-        this.isCompleted = isCompleted;
-        this.priority = priority;
-    }
+        public ReminderEntity(@NonNull String title,
+                                                  String description,
+                                                  Long scheduledTimeEpochMillis,
+                                                  boolean isCompleted) {
+                this.title = title;
+                this.description = description;
+                this.scheduledTimeEpochMillis = scheduledTimeEpochMillis;
+                this.isCompleted = isCompleted;
+        }
 }
 
 

@@ -72,19 +72,17 @@ public class RemindersActivity extends AppCompatActivity implements ReminderEnti
 
         viewModel = new ViewModelProvider(this).get(ReminderViewModel.class);
         viewModel.getAllReminders().observe(this, reminders -> {
-            if (!medicationMode) {
-                adapter.submitList(reminders);
-            } else {
-                java.util.List<com.mihir.alzheimerscaregiver.data.entity.ReminderEntity> meds = new java.util.ArrayList<>();
-                if (reminders != null) {
-                    for (com.mihir.alzheimerscaregiver.data.entity.ReminderEntity r : reminders) {
-                        if (r.priority >= 2) { // Treat High priority as medication
-                            meds.add(r);
-                        }
-                    }
-                }
-                adapter.submitList(meds);
+            if (reminders == null) {
+                adapter.submitList(null);
+                return;
             }
+            java.util.List<com.mihir.alzheimerscaregiver.data.entity.ReminderEntity> activeReminders = new java.util.ArrayList<>();
+            for (com.mihir.alzheimerscaregiver.data.entity.ReminderEntity r : reminders) {
+                if (!r.isCompleted) {
+                    activeReminders.add(r);
+                }
+            }
+            adapter.submitList(activeReminders);
         });
 
         backButton.setOnClickListener(v -> finish());
@@ -117,23 +115,10 @@ public class RemindersActivity extends AppCompatActivity implements ReminderEnti
         EditText inputTitle = view.findViewById(R.id.inputTitle);
         EditText inputDescription = view.findViewById(R.id.inputDescription);
         EditText inputDateTime = view.findViewById(R.id.inputDateTime);
-        Spinner spinnerPriority = view.findViewById(R.id.spinnerPriority);
         CheckBox checkCompleted = view.findViewById(R.id.checkCompleted);
-
         final Long[] scheduledAt = {null};
-
-        // Occurrence for tasks, or before/after food for meds using same spinner
-        if (medicationMode) {
-            spinnerPriority.setAdapter(new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"Before Food", "After Food"}));
-            spinnerPriority.setSelection(0);
-            inputTitle.setHint("Medicine (e.g., Aspirin)");
-            inputDescription.setHint("Dosage (e.g., 1 tablet)");
-        } else {
-            spinnerPriority.setAdapter(new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"Once", "Daily", "Weekly"}));
-            spinnerPriority.setSelection(1);
-            inputTitle.setHint("Task");
-            inputDescription.setHint("Notes (optional)");
-        }
+        inputTitle.setHint("Medicine (e.g., Aspirin)");
+        inputDescription.setHint("Dosage (e.g., 1 tablet)");
         if (existing != null) {
             inputTitle.setText(existing.title);
             inputDescription.setText(existing.description);
@@ -143,7 +128,6 @@ public class RemindersActivity extends AppCompatActivity implements ReminderEnti
                 inputDateTime.setText(new SimpleDateFormat("EEE, MMM d h:mm a", Locale.getDefault())
                         .format(new Date(existing.scheduledTimeEpochMillis)));
             }
-            spinnerPriority.setSelection(Math.max(0, Math.min(2, existing.priority)));
         }
 
         inputDateTime.setOnClickListener(v -> pickDateTime(scheduledAt, inputDateTime));
@@ -155,11 +139,10 @@ public class RemindersActivity extends AppCompatActivity implements ReminderEnti
                     String title = inputTitle.getText().toString().trim();
                     if (TextUtils.isEmpty(title)) { toast("Title required"); return; }
                     String desc = emptyToNull(inputDescription.getText().toString().trim());
-                    int priority = spinnerPriority.getSelectedItemPosition();
                     boolean completed = checkCompleted.isChecked();
-
                     if (existing == null) {
-                        ReminderEntity entity = new ReminderEntity(title, desc, scheduledAt[0], completed, priority);
+                        ReminderEntity entity = new ReminderEntity(title, desc, scheduledAt[0], completed);
+                        toast("Inserting reminder: " + title);
                         viewModel.insert(entity);
                         if (!completed && scheduledAt[0] != null) { ReminderScheduler.schedule(this, scheduledAt[0], title, desc); }
                     } else {
@@ -167,7 +150,7 @@ public class RemindersActivity extends AppCompatActivity implements ReminderEnti
                         existing.description = desc;
                         existing.scheduledTimeEpochMillis = scheduledAt[0];
                         existing.isCompleted = completed;
-                        existing.priority = priority;
+                        toast("Updating reminder: " + title);
                         viewModel.update(existing);
                         if (!completed && scheduledAt[0] != null) { ReminderScheduler.schedule(this, scheduledAt[0], title, desc); }
                     }

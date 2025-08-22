@@ -30,7 +30,10 @@ public class ReminderRepository {
     }
 
     public void insert(ReminderEntity reminder) {
-        ioExecutor.execute(() -> reminderDao.insert(reminder));
+        ioExecutor.execute(() -> {
+            android.util.Log.d("ReminderRepository", "Inserting reminder: " + reminder.title);
+            reminderDao.insert(reminder);
+        });
     }
 
     public void update(ReminderEntity reminder) {
