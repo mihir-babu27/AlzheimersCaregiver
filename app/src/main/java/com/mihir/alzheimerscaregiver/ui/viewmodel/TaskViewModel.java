@@ -18,7 +18,7 @@ public class TaskViewModel extends AndroidViewModel {
 
     public TaskViewModel(@NonNull Application application) {
         super(application);
-        repository = new TaskRepository(application);
+        repository = new TaskRepository();
         todayTasks = repository.getTodayTasks();
     }
 
@@ -54,7 +54,7 @@ public class TaskViewModel extends AndroidViewModel {
         repository.delete(entity);
     }
 
-    public void markCompleted(long id, boolean completed) {
+    public void markCompleted(String id, boolean completed) {
         repository.markCompleted(id, completed);
     }
 }

@@ -1,51 +1,129 @@
+
 package com.mihir.alzheimerscaregiver.repository;
 
-import android.content.Context;
-
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
-import com.mihir.alzheimerscaregiver.data.AppDatabase;
-import com.mihir.alzheimerscaregiver.data.dao.ReminderDao;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.mihir.alzheimerscaregiver.data.entity.ReminderEntity;
+import com.mihir.alzheimerscaregiver.data.FirebaseConfig;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class ReminderRepository {
 
-    private final ReminderDao reminderDao;
-    private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
-
-    public ReminderRepository(Context context) {
-        this.reminderDao = AppDatabase.getInstance(context).reminderDao();
-    }
+    private final FirebaseFirestore db = FirebaseConfig.getInstance();
+    private final CollectionReference remindersRef = db.collection("reminders");
 
     public LiveData<List<ReminderEntity>> getAllRemindersSortedByDate() {
-        return reminderDao.getAllSortedByDate();
+        MutableLiveData<List<ReminderEntity>> liveData = new MutableLiveData<>();
+        remindersRef.orderBy("scheduledTimeEpochMillis")
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        liveData.setValue(new ArrayList<>());
+                        return;
+                    }
+                    List<ReminderEntity> list = new ArrayList<>();
+                    if (snapshots != null) {
+                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                            ReminderEntity entity = dc.getDocument().toObject(ReminderEntity.class);
+                            if (entity != null) {
+                                entity.id = dc.getDocument().getId();
+                                list.add(entity);
+                            }
+                        }
+                    }
+                    liveData.setValue(list);
+                });
+        return liveData;
     }
 
     public LiveData<List<ReminderEntity>> search(String query) {
-        return reminderDao.search(query);
+        MutableLiveData<List<ReminderEntity>> liveData = new MutableLiveData<>();
+        remindersRef.whereGreaterThanOrEqualTo("title", query)
+                .whereLessThanOrEqualTo("title", query + '\uf8ff')
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        liveData.setValue(new ArrayList<>());
+                        return;
+                    }
+                    List<ReminderEntity> list = new ArrayList<>();
+                    if (snapshots != null) {
+                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                            ReminderEntity entity = dc.getDocument().toObject(ReminderEntity.class);
+                            if (entity != null) {
+                                entity.id = dc.getDocument().getId();
+                                list.add(entity);
+                            }
+                        }
+                    }
+                    liveData.setValue(list);
+                });
+        return liveData;
     }
 
     public void insert(ReminderEntity reminder) {
-        ioExecutor.execute(() -> {
-            android.util.Log.d("ReminderRepository", "Inserting reminder: " + reminder.title);
-            reminderDao.insert(reminder);
-        });
+        if (reminder.id == null || reminder.id.isEmpty()) {
+            // Generate a new ID if not present
+            DocumentReference docRef = remindersRef.document();
+            reminder.id = docRef.getId();
+            docRef.set(reminder)
+                    .addOnSuccessListener(aVoid -> {
+                        // Success
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle error
+                    });
+        } else {
+            remindersRef.document(reminder.id).set(reminder)
+                    .addOnSuccessListener(aVoid -> {
+                        // Success
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle error
+                    });
+        }
     }
 
     public void update(ReminderEntity reminder) {
-        ioExecutor.execute(() -> reminderDao.update(reminder));
+        if (reminder.id != null && !reminder.id.isEmpty()) {
+            remindersRef.document(reminder.id).set(reminder)
+                    .addOnSuccessListener(aVoid -> {
+                        // Success
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle error
+                    });
+        }
     }
 
     public void delete(ReminderEntity reminder) {
-        ioExecutor.execute(() -> reminderDao.delete(reminder));
+        if (reminder.id != null && !reminder.id.isEmpty()) {
+            remindersRef.document(reminder.id).delete()
+                    .addOnSuccessListener(aVoid -> {
+                        // Success
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle error
+                    });
+        }
     }
 
-    public void markCompleted(long id, boolean completed) {
-        ioExecutor.execute(() -> reminderDao.markCompleted(id, completed));
+    public void markCompleted(String id, boolean completed) {
+        remindersRef.document(id).update("isCompleted", completed)
+                .addOnSuccessListener(aVoid -> {
+                    // Success
+                })
+                .addOnFailureListener(e -> {
+                    // Handle error
+                });
     }
 }
 

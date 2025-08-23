@@ -18,6 +18,12 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
+import android.os.Build;
+import android.provider.Settings;
+import android.content.Intent;
+import android.app.AlarmManager;
+import android.content.Context;
+
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.mihir.alzheimerscaregiver.data.entity.ReminderEntity;
@@ -41,6 +47,17 @@ public class RemindersActivity extends AppCompatActivity implements ReminderEnti
 
     public static final String EXTRA_MEDICATION_MODE = "EXTRA_MEDICATION_MODE";
     private boolean medicationMode = false;
+
+    // Call this before scheduling an exact alarm
+    private void checkAndRequestExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12+
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
+                Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                startActivity(intent);
+            }
+    }
+}
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

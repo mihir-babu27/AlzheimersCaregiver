@@ -1,48 +1,125 @@
+
 package com.mihir.alzheimerscaregiver.repository;
 
-import android.content.Context;
-
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
-import com.mihir.alzheimerscaregiver.data.AppDatabase;
-import com.mihir.alzheimerscaregiver.data.dao.ContactDao;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.mihir.alzheimerscaregiver.data.entity.ContactEntity;
+import com.mihir.alzheimerscaregiver.data.FirebaseConfig;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class ContactRepository {
 
-    private final ContactDao contactDao;
-    private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
-
-    public ContactRepository(Context context) {
-        this.contactDao = AppDatabase.getInstance(context).contactDao();
-    }
+    private final FirebaseFirestore db = FirebaseConfig.getInstance();
+    private final CollectionReference contactsRef = db.collection("contacts");
 
     public LiveData<List<ContactEntity>> getAll() {
-        return contactDao.getAll();
+        MutableLiveData<List<ContactEntity>> liveData = new MutableLiveData<>();
+        contactsRef.orderBy("name")
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        liveData.setValue(new ArrayList<>());
+                        return;
+                    }
+                    List<ContactEntity> list = new ArrayList<>();
+                    if (snapshots != null) {
+                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                            ContactEntity entity = dc.getDocument().toObject(ContactEntity.class);
+                            if (entity != null) {
+                                entity.id = dc.getDocument().getId();
+                                list.add(entity);
+                            }
+                        }
+                    }
+                    liveData.setValue(list);
+                });
+        return liveData;
     }
 
     public LiveData<List<ContactEntity>> search(String query) {
-        return contactDao.search(query);
+        MutableLiveData<List<ContactEntity>> liveData = new MutableLiveData<>();
+        contactsRef.whereGreaterThanOrEqualTo("name", query)
+                .whereLessThanOrEqualTo("name", query + '\uf8ff')
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        liveData.setValue(new ArrayList<>());
+                        return;
+                    }
+                    List<ContactEntity> list = new ArrayList<>();
+                    if (snapshots != null) {
+                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                            ContactEntity entity = dc.getDocument().toObject(ContactEntity.class);
+                            if (entity != null) {
+                                entity.id = dc.getDocument().getId();
+                                list.add(entity);
+                            }
+                        }
+                    }
+                    liveData.setValue(list);
+                });
+        return liveData;
     }
 
     public void insert(ContactEntity contact) {
-        ioExecutor.execute(() -> contactDao.insert(contact));
+        if (contact.id == null || contact.id.isEmpty()) {
+            DocumentReference docRef = contactsRef.document();
+            contact.id = docRef.getId();
+            docRef.set(contact)
+                    .addOnSuccessListener(aVoid -> {
+                        // Success
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle error
+                    });
+        } else {
+            contactsRef.document(contact.id).set(contact)
+                    .addOnSuccessListener(aVoid -> {
+                        // Success
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle error
+                    });
+        }
     }
 
     public void update(ContactEntity contact) {
-        ioExecutor.execute(() -> contactDao.update(contact));
+        if (contact.id != null && !contact.id.isEmpty()) {
+            contactsRef.document(contact.id).set(contact)
+                    .addOnSuccessListener(aVoid -> {
+                        // Success
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle error
+                    });
+        }
     }
 
     public void delete(ContactEntity contact) {
-        ioExecutor.execute(() -> contactDao.delete(contact));
+        if (contact.id != null && !contact.id.isEmpty()) {
+            contactsRef.document(contact.id).delete()
+                    .addOnSuccessListener(aVoid -> {
+                        // Success
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle error
+                    });
+        }
     }
 
-    public void setPrimary(long id) {
-        ioExecutor.execute(() -> contactDao.setPrimary(id));
+    public void setPrimary(String id) {
+        contactsRef.document(id).update("isPrimary", true)
+                .addOnSuccessListener(aVoid -> {
+                    // Success
+                })
+                .addOnFailureListener(e -> {
+                    // Handle error
+                });
     }
 }
 

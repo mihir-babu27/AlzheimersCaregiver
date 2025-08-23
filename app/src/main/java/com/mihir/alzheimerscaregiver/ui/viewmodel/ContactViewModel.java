@@ -18,7 +18,7 @@ public class ContactViewModel extends AndroidViewModel {
 
     public ContactViewModel(@NonNull Application application) {
         super(application);
-        repository = new ContactRepository(application);
+        repository = new ContactRepository();
         contacts = repository.getAll();
     }
 
@@ -42,7 +42,7 @@ public class ContactViewModel extends AndroidViewModel {
         repository.delete(entity);
     }
 
-    public void setPrimary(long id) {
+    public void setPrimary(String id) {
         repository.setPrimary(id);
     }
 }

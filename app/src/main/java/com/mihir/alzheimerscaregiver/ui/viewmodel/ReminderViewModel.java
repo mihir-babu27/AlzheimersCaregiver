@@ -18,7 +18,7 @@ public class ReminderViewModel extends AndroidViewModel {
 
     public ReminderViewModel(@NonNull Application application) {
         super(application);
-        repository = new ReminderRepository(application);
+        repository = new ReminderRepository();
         allReminders = repository.getAllRemindersSortedByDate();
     }
 
@@ -42,7 +42,7 @@ public class ReminderViewModel extends AndroidViewModel {
         repository.delete(entity);
     }
 
-    public void markCompleted(long id, boolean completed) {
+    public void markCompleted(String id, boolean completed) {
         repository.markCompleted(id, completed);
     }
 }
