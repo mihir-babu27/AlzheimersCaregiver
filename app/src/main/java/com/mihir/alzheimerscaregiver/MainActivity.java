@@ -6,12 +6,15 @@ import androidx.cardview.widget.CardView;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Calendar;
 
+import com.mihir.alzheimerscaregiver.auth.FirebaseAuthManager;
 import com.mihir.alzheimerscaregiver.face_recognition.FaceRecognitionActivity;
 
 
@@ -21,11 +24,52 @@ public class MainActivity extends AppCompatActivity {
     private TextView welcomeText;
     private TextView nameText;
     private CardView medicationCard, tasksCard, memoryCard, photosCard, emergencyCard;
+    
+    // Firebase Auth Manager
+    private FirebaseAuthManager authManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Initialize Firebase early to prevent initialization issues
+        try {
+            com.mihir.alzheimerscaregiver.data.FirebaseInitializer.initialize(this);
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Error initializing Firebase", e);
+            // Continue with app initialization even if Firebase fails
+        }
+
+        // Initialize notification channels early
+        com.mihir.alzheimerscaregiver.notifications.NotificationUtils.ensureChannels(this);
+        
+        // Request notification permission on Android 13+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) 
+                    != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                androidx.activity.result.ActivityResultLauncher<String> launcher = registerForActivityResult(
+                    new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+                    isGranted -> {
+                        if (isGranted) {
+                            android.util.Log.d("MainActivity", "Notification permission granted");
+                        } else {
+                            android.util.Log.w("MainActivity", "Notification permission denied");
+                        }
+                    }
+                );
+                launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+
+        // Initialize Firebase Auth Manager
+        authManager = new FirebaseAuthManager();
+
+        // Check if user is signed in
+        if (!authManager.isPatientSignedIn()) {
+            navigateToAuth();
+            return;
+        }
 
         // Initialize UI elements
         initializeViews();
@@ -71,13 +115,27 @@ public class MainActivity extends AppCompatActivity {
 
         welcomeText.setText(greeting);
 
-        // Read name from preferences
-        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
-        String userName = prefs.getString("user_name", "");
-        if (userName == null || userName.trim().isEmpty()) {
-            userName = "Friend";
+        // Get patient name from Firebase Auth
+        String patientId = authManager.getCurrentPatientId();
+        if (patientId != null) {
+            authManager.getPatientData(patientId, new FirebaseAuthManager.PatientDataCallback() {
+                @Override
+                public void onSuccess(com.mihir.alzheimerscaregiver.data.entity.PatientEntity patient) {
+                    if (patient != null && patient.name != null) {
+                        nameText.setText(patient.name);
+                    } else {
+                        nameText.setText("Friend");
+                    }
+                }
+                
+                @Override
+                public void onError(String error) {
+                    nameText.setText("Friend");
+                }
+            });
+        } else {
+            nameText.setText("Friend");
         }
-        nameText.setText(userName);
     }
 
     /**
@@ -172,5 +230,38 @@ public class MainActivity extends AppCompatActivity {
         setupWelcomeMessage();
 
         // You could also refresh task counts, medication reminders, etc.
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        
+        if (id == R.id.action_profile) {
+            // Navigate to Patient Profile
+            Intent intent = new Intent(this, PatientProfileActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (id == R.id.action_sign_out) {
+            // Sign out user
+            authManager.signOut();
+            Toast.makeText(this, "Signed out successfully", Toast.LENGTH_SHORT).show();
+            navigateToAuth();
+            return true;
+        }
+        
+        return super.onOptionsItemSelected(item);
+    }
+    
+    private void navigateToAuth() {
+        Intent intent = new Intent(this, com.mihir.alzheimerscaregiver.auth.AuthenticationActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }

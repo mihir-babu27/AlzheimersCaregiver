@@ -88,6 +88,14 @@ public class RemindersActivity extends AppCompatActivity implements ReminderEnti
         helper.attachToRecyclerView(remindersRecyclerView);
 
         viewModel = new ViewModelProvider(this).get(ReminderViewModel.class);
+        
+        // Observe error messages
+        viewModel.getErrorMessage().observe(this, error -> {
+            if (error != null && !error.isEmpty()) {
+                Toast.makeText(this, "Error: " + error, Toast.LENGTH_LONG).show();
+            }
+        });
+        
         viewModel.getAllReminders().observe(this, reminders -> {
             if (reminders == null) {
                 adapter.submitList(null);

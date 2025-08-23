@@ -1,11 +1,8 @@
 
 package com.mihir.alzheimerscaregiver.repository;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.mihir.alzheimerscaregiver.data.entity.TaskEntity;
@@ -17,178 +14,185 @@ import java.util.List;
 public class TaskRepository {
 
     private final FirebaseFirestore db = FirebaseConfig.getInstance();
-    private final CollectionReference tasksRef = db.collection("tasks");
+    private final FirebaseAuth auth = FirebaseAuth.getInstance();
 
-    public LiveData<List<TaskEntity>> getAllSortedBySchedule() {
-        MutableLiveData<List<TaskEntity>> liveData = new MutableLiveData<>();
-        tasksRef.orderBy("scheduledTimeEpochMillis")
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) {
-                        liveData.setValue(new ArrayList<>());
-                        return;
-                    }
+    private CollectionReference getTasksRef() {
+        String patientId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : "default";
+        return db.collection("patients").document(patientId).collection("tasks");
+    }
+
+    public interface FirebaseCallback<T> {
+        void onSuccess(T result);
+        void onError(String error);
+    }
+
+    public void getAllSortedBySchedule(FirebaseCallback<List<TaskEntity>> callback) {
+        getTasksRef().orderBy("scheduledTimeEpochMillis")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<TaskEntity> list = new ArrayList<>();
-                    if (snapshots != null) {
-                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                            TaskEntity entity = dc.getDocument().toObject(TaskEntity.class);
+                    if (queryDocumentSnapshots != null) {
+                        for (var doc : queryDocumentSnapshots) {
+                            TaskEntity entity = doc.toObject(TaskEntity.class);
                             if (entity != null) {
-                                entity.id = dc.getDocument().getId();
+                                entity.id = doc.getId();
                                 list.add(entity);
                             }
                         }
                     }
-                    liveData.setValue(list);
+                    callback.onSuccess(list);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onError(e.getMessage());
                 });
-        return liveData;
     }
 
-    public LiveData<List<TaskEntity>> getTodayTasks() {
-        MutableLiveData<List<TaskEntity>> liveData = new MutableLiveData<>();
+    public void getTodayTasks(FirebaseCallback<List<TaskEntity>> callback) {
         long startOfDay = getStartOfDay();
         long endOfDay = getEndOfDay();
         
-        tasksRef.whereGreaterThanOrEqualTo("scheduledTimeEpochMillis", startOfDay)
+        getTasksRef().whereGreaterThanOrEqualTo("scheduledTimeEpochMillis", startOfDay)
                 .whereLessThanOrEqualTo("scheduledTimeEpochMillis", endOfDay)
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) {
-                        liveData.setValue(new ArrayList<>());
-                        return;
-                    }
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<TaskEntity> list = new ArrayList<>();
-                    if (snapshots != null) {
-                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                            TaskEntity entity = dc.getDocument().toObject(TaskEntity.class);
+                    if (queryDocumentSnapshots != null) {
+                        for (var doc : queryDocumentSnapshots) {
+                            TaskEntity entity = doc.toObject(TaskEntity.class);
                             if (entity != null) {
-                                entity.id = dc.getDocument().getId();
+                                entity.id = doc.getId();
                                 list.add(entity);
                             }
                         }
                     }
-                    liveData.setValue(list);
+                    callback.onSuccess(list);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onError(e.getMessage());
                 });
-        return liveData;
     }
 
-    public LiveData<List<TaskEntity>> getPendingTasks() {
-        MutableLiveData<List<TaskEntity>> liveData = new MutableLiveData<>();
-        tasksRef.whereEqualTo("isCompleted", false)
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) {
-                        liveData.setValue(new ArrayList<>());
-                        return;
-                    }
+    public void getPendingTasks(FirebaseCallback<List<TaskEntity>> callback) {
+        getTasksRef().whereEqualTo("isCompleted", false)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<TaskEntity> list = new ArrayList<>();
-                    if (snapshots != null) {
-                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                            TaskEntity entity = dc.getDocument().toObject(TaskEntity.class);
+                    if (queryDocumentSnapshots != null) {
+                        for (var doc : queryDocumentSnapshots) {
+                            TaskEntity entity = doc.toObject(TaskEntity.class);
                             if (entity != null) {
-                                entity.id = dc.getDocument().getId();
+                                entity.id = doc.getId();
                                 list.add(entity);
                             }
                         }
                     }
-                    liveData.setValue(list);
+                    callback.onSuccess(list);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onError(e.getMessage());
                 });
-        return liveData;
     }
 
-    public LiveData<List<TaskEntity>> search(String query) {
-        MutableLiveData<List<TaskEntity>> liveData = new MutableLiveData<>();
-        tasksRef.whereGreaterThanOrEqualTo("name", query)
+    public void search(String query, FirebaseCallback<List<TaskEntity>> callback) {
+        getTasksRef().whereGreaterThanOrEqualTo("name", query)
                 .whereLessThanOrEqualTo("name", query + '\uf8ff')
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) {
-                        liveData.setValue(new ArrayList<>());
-                        return;
-                    }
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<TaskEntity> list = new ArrayList<>();
-                    if (snapshots != null) {
-                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                            TaskEntity entity = dc.getDocument().toObject(TaskEntity.class);
+                    if (queryDocumentSnapshots != null) {
+                        for (var doc : queryDocumentSnapshots) {
+                            TaskEntity entity = doc.toObject(TaskEntity.class);
                             if (entity != null) {
-                                entity.id = dc.getDocument().getId();
+                                entity.id = doc.getId();
                                 list.add(entity);
                             }
                         }
                     }
-                    liveData.setValue(list);
+                    callback.onSuccess(list);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onError(e.getMessage());
                 });
-        return liveData;
     }
 
-    public LiveData<List<TaskEntity>> getByCategory(String category) {
-        MutableLiveData<List<TaskEntity>> liveData = new MutableLiveData<>();
-        tasksRef.whereEqualTo("category", category)
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) {
-                        liveData.setValue(new ArrayList<>());
-                        return;
-                    }
+    public void getByCategory(String category, FirebaseCallback<List<TaskEntity>> callback) {
+        getTasksRef().whereEqualTo("category", category)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<TaskEntity> list = new ArrayList<>();
-                    if (snapshots != null) {
-                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                            TaskEntity entity = dc.getDocument().toObject(TaskEntity.class);
-                            list.add(entity);
+                    if (queryDocumentSnapshots != null) {
+                        for (var doc : queryDocumentSnapshots) {
+                            TaskEntity entity = doc.toObject(TaskEntity.class);
+                            if (entity != null) {
+                                entity.id = doc.getId();
+                                list.add(entity);
+                            }
                         }
                     }
-                    liveData.setValue(list);
+                    callback.onSuccess(list);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onError(e.getMessage());
                 });
-        return liveData;
     }
 
-    public void insert(TaskEntity task) {
+    public void insert(TaskEntity task, FirebaseCallback<Void> callback) {
         if (task.id == null || task.id.isEmpty()) {
-            DocumentReference docRef = tasksRef.document();
+            DocumentReference docRef = getTasksRef().document();
             task.id = docRef.getId();
             docRef.set(task)
                     .addOnSuccessListener(aVoid -> {
-                        // Success
+                        callback.onSuccess(null);
                     })
                     .addOnFailureListener(e -> {
-                        // Handle error
+                        callback.onError(e.getMessage());
                     });
         } else {
-            tasksRef.document(task.id).set(task)
+            getTasksRef().document(task.id).set(task)
                     .addOnSuccessListener(aVoid -> {
-                        // Success
+                        callback.onSuccess(null);
                     })
                     .addOnFailureListener(e -> {
-                        // Handle error
+                        callback.onError(e.getMessage());
                     });
         }
     }
 
-    public void update(TaskEntity task) {
+    public void update(TaskEntity task, FirebaseCallback<Void> callback) {
         if (task.id != null && !task.id.isEmpty()) {
-            tasksRef.document(task.id).set(task)
+            getTasksRef().document(task.id).set(task)
                     .addOnSuccessListener(aVoid -> {
-                        // Success
+                        callback.onSuccess(null);
                     })
                     .addOnFailureListener(e -> {
-                        // Handle error
+                        callback.onError(e.getMessage());
                     });
+        } else {
+            callback.onError("Task ID is required for update");
         }
     }
 
-    public void delete(TaskEntity task) {
+    public void delete(TaskEntity task, FirebaseCallback<Void> callback) {
         if (task.id != null && !task.id.isEmpty()) {
-            tasksRef.document(task.id).delete()
+            getTasksRef().document(task.id).delete()
                     .addOnSuccessListener(aVoid -> {
-                        // Success
+                        callback.onSuccess(null);
                     })
                     .addOnFailureListener(e -> {
-                        // Handle error
+                        callback.onError(e.getMessage());
                     });
+        } else {
+            callback.onError("Task ID is required for deletion");
         }
     }
 
-    public void markCompleted(String id, boolean completed) {
-        tasksRef.document(id).update("isCompleted", completed)
+    public void markCompleted(String id, boolean completed, FirebaseCallback<Void> callback) {
+        getTasksRef().document(id).update("isCompleted", completed)
                 .addOnSuccessListener(aVoid -> {
-                    // Success
+                    callback.onSuccess(null);
                 })
                 .addOnFailureListener(e -> {
-                    // Handle error
+                    callback.onError(e.getMessage());
                 });
     }
 

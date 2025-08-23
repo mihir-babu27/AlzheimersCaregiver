@@ -1,43 +1,42 @@
 package com.mihir.alzheimerscaregiver;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.mihir.alzheimerscaregiver.auth.DeviceAuth;
+import com.mihir.alzheimerscaregiver.auth.FirebaseAuthManager;
 
 public class SplashGateActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
-        String name = prefs.getString("user_name", null);
-
-        // First run → collect name
-        if (name == null || name.trim().isEmpty()) {
-            startActivity(new Intent(this, OnboardingActivity.class));
-            finish();
-            return;
+        // Initialize Firebase early to prevent initialization issues
+        try {
+            com.mihir.alzheimerscaregiver.data.FirebaseInitializer.initialize(this);
+        } catch (Exception e) {
+            android.util.Log.e("SplashGateActivity", "Error initializing Firebase", e);
+            // Continue with app initialization even if Firebase fails
         }
 
-        // Authenticate with device credentials (PIN/Pattern/Password or biometrics)
-        DeviceAuth.prompt(this, new DeviceAuth.Callback() {
-            @Override
-            public void onSuccess() {
-                Intent i = new Intent(SplashGateActivity.this, MainActivity.class);
-                startActivity(i);
-                finish();
-            }
+        // Initialize notification channels early
+        com.mihir.alzheimerscaregiver.notifications.NotificationUtils.ensureChannels(this);
 
-            @Override
-            public void onFailure() {
-                finish();
-            }
-        });
+        // Initialize Firebase Auth Manager
+        FirebaseAuthManager authManager = new FirebaseAuthManager();
+
+        // Check if user is already signed in
+        if (authManager.isPatientSignedIn()) {
+            // User is signed in, go to MainActivity
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        } else {
+            // User is not signed in, go to AuthenticationActivity
+            startActivity(new Intent(this, com.mihir.alzheimerscaregiver.auth.AuthenticationActivity.class));
+            finish();
+        }
     }
 }
 

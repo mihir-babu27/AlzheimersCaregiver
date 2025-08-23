@@ -1,11 +1,8 @@
 
 package com.mihir.alzheimerscaregiver.repository;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.mihir.alzheimerscaregiver.data.entity.ContactEntity;
@@ -17,108 +14,118 @@ import java.util.List;
 public class ContactRepository {
 
     private final FirebaseFirestore db = FirebaseConfig.getInstance();
-    private final CollectionReference contactsRef = db.collection("contacts");
+    private final FirebaseAuth auth = FirebaseAuth.getInstance();
 
-    public LiveData<List<ContactEntity>> getAll() {
-        MutableLiveData<List<ContactEntity>> liveData = new MutableLiveData<>();
-        contactsRef.orderBy("name")
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) {
-                        liveData.setValue(new ArrayList<>());
-                        return;
-                    }
+    private CollectionReference getContactsRef() {
+        String patientId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : "default";
+        return db.collection("patients").document(patientId).collection("contacts");
+    }
+
+    public interface FirebaseCallback<T> {
+        void onSuccess(T result);
+        void onError(String error);
+    }
+
+    public void getAll(FirebaseCallback<List<ContactEntity>> callback) {
+        getContactsRef().orderBy("name")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<ContactEntity> list = new ArrayList<>();
-                    if (snapshots != null) {
-                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                            ContactEntity entity = dc.getDocument().toObject(ContactEntity.class);
+                    if (queryDocumentSnapshots != null) {
+                        for (var doc : queryDocumentSnapshots) {
+                            ContactEntity entity = doc.toObject(ContactEntity.class);
                             if (entity != null) {
-                                entity.id = dc.getDocument().getId();
+                                entity.id = doc.getId();
                                 list.add(entity);
                             }
                         }
                     }
-                    liveData.setValue(list);
+                    callback.onSuccess(list);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onError(e.getMessage());
                 });
-        return liveData;
     }
 
-    public LiveData<List<ContactEntity>> search(String query) {
-        MutableLiveData<List<ContactEntity>> liveData = new MutableLiveData<>();
-        contactsRef.whereGreaterThanOrEqualTo("name", query)
+    public void search(String query, FirebaseCallback<List<ContactEntity>> callback) {
+        getContactsRef().whereGreaterThanOrEqualTo("name", query)
                 .whereLessThanOrEqualTo("name", query + '\uf8ff')
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) {
-                        liveData.setValue(new ArrayList<>());
-                        return;
-                    }
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<ContactEntity> list = new ArrayList<>();
-                    if (snapshots != null) {
-                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                            ContactEntity entity = dc.getDocument().toObject(ContactEntity.class);
+                    if (queryDocumentSnapshots != null) {
+                        for (var doc : queryDocumentSnapshots) {
+                            ContactEntity entity = doc.toObject(ContactEntity.class);
                             if (entity != null) {
-                                entity.id = dc.getDocument().getId();
+                                entity.id = doc.getId();
                                 list.add(entity);
                             }
                         }
                     }
-                    liveData.setValue(list);
+                    callback.onSuccess(list);
+                })
+                .addOnFailureListener(e -> {
+                    callback.onError(e.getMessage());
                 });
-        return liveData;
     }
 
-    public void insert(ContactEntity contact) {
+    public void insert(ContactEntity contact, FirebaseCallback<Void> callback) {
         if (contact.id == null || contact.id.isEmpty()) {
-            DocumentReference docRef = contactsRef.document();
+            DocumentReference docRef = getContactsRef().document();
             contact.id = docRef.getId();
             docRef.set(contact)
                     .addOnSuccessListener(aVoid -> {
-                        // Success
+                        callback.onSuccess(null);
                     })
                     .addOnFailureListener(e -> {
-                        // Handle error
+                        callback.onError(e.getMessage());
                     });
         } else {
-            contactsRef.document(contact.id).set(contact)
+            getContactsRef().document(contact.id).set(contact)
                     .addOnSuccessListener(aVoid -> {
-                        // Success
+                        callback.onSuccess(null);
                     })
                     .addOnFailureListener(e -> {
-                        // Handle error
+                        callback.onError(e.getMessage());
                     });
         }
     }
 
-    public void update(ContactEntity contact) {
+    public void update(ContactEntity contact, FirebaseCallback<Void> callback) {
         if (contact.id != null && !contact.id.isEmpty()) {
-            contactsRef.document(contact.id).set(contact)
+            getContactsRef().document(contact.id).set(contact)
                     .addOnSuccessListener(aVoid -> {
-                        // Success
+                        callback.onSuccess(null);
                     })
                     .addOnFailureListener(e -> {
-                        // Handle error
+                        callback.onError(e.getMessage());
                     });
+        } else {
+            callback.onError("Contact ID is required for update");
         }
     }
 
-    public void delete(ContactEntity contact) {
+    public void delete(ContactEntity contact, FirebaseCallback<Void> callback) {
         if (contact.id != null && !contact.id.isEmpty()) {
-            contactsRef.document(contact.id).delete()
+            getContactsRef().document(contact.id).delete()
                     .addOnSuccessListener(aVoid -> {
-                        // Success
+                        callback.onSuccess(null);
                     })
                     .addOnFailureListener(e -> {
-                        // Handle error
+                        callback.onError(e.getMessage());
                     });
+        } else {
+            callback.onError("Contact ID is required for deletion");
         }
     }
 
-    public void setPrimary(String id) {
-        contactsRef.document(id).update("isPrimary", true)
+    public void setPrimary(String id, FirebaseCallback<Void> callback) {
+        getContactsRef().document(id).update("isPrimary", true)
                 .addOnSuccessListener(aVoid -> {
-                    // Success
+                    callback.onSuccess(null);
                 })
                 .addOnFailureListener(e -> {
-                    // Handle error
+                    callback.onError(e.getMessage());
                 });
     }
 }
