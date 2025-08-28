@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/questionTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:paddingBottom="12dp" />
+
+    <LinearLayout
+        android:id="@+id/textInputContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <EditText
+            android:id="@+id/textInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Type your answer" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/multipleChoiceContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/drawingContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="gone">
+
+        <com.mihir.alzheimerscaregiver.views.DrawingCanvasView
+            android:id="@+id/drawingView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+
+    <!-- Recall (multiple EditTexts) -->
+    <LinearLayout
+        android:id="@+id/recallContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:paddingBottom="8dp" />
+
+    <!-- Image + input container -->
+    <LinearLayout
+        android:id="@+id/imageContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:paddingBottom="8dp">
+
+        <ImageView
+            android:id="@+id/questionImage"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerInside"
+            android:adjustViewBounds="true" />
+
+        <EditText
+            android:id="@+id/imageAnswerInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Type your answer" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:paddingTop="12dp">
+
+        <Button
+            android:id="@+id/prevButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/previous" />
+
+        <Button
+            android:id="@+id/nextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/next"
+            android:layout_marginStart="16dp" />
+    </LinearLayout>
+
+</LinearLayout>
+
+

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/inputTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Medicine / Task"
+        android:inputType="textCapSentences" />
+
+    <EditText
+        android:id="@+id/inputDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Dosage (for medication) or notes (optional)"
+        android:layout_marginTop="8dp"
+        android:inputType="textCapSentences|textMultiLine" />
+
+    <EditText
+        android:id="@+id/inputDateTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Date &amp; Time (tap to pick)"
+        android:focusable="false"
+        android:clickable="true"
+        android:layout_marginTop="8dp" />
+
+
+    <CheckBox
+        android:id="@+id/checkCompleted"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mark as completed"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>
+
+

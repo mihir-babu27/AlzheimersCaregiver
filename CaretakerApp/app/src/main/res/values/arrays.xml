@@ -1,0 +1,6 @@
+<resources>
+    <string-array name="mmse_question_types">
+        <item>text</item>
+        <item>mcq</item>
+    </string-array>
+</resources>

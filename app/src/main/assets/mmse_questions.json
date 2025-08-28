@@ -1,0 +1,21 @@
+{
+  "questions": [
+    { "id": "t1", "section": "Orientation (Time)", "question": "What is the year?", "type": "text", "expectedAnswer": "{{CURRENT_YEAR}}", "score": 1 },
+    { "id": "t2", "section": "Orientation (Time)", "question": "What month is it?", "type": "text", "expectedAnswer": "{{CURRENT_MONTH_NAME}}", "score": 1 },
+    { "id": "t3", "section": "Orientation (Time)", "question": "What is today’s day of the week?", "type": "text", "expectedAnswer": "{{CURRENT_WEEKDAY}}", "score": 1 },
+
+    { "id": "p1", "section": "Orientation (Place)", "question": "What country are we in?", "type": "text", "expectedAnswer": "{{CURRENT_COUNTRY}}", "score": 1 },
+    { "id": "p2", "section": "Orientation (Place)", "question": "What city are we in?", "type": "text", "score": 1 },
+
+    { "id": "reg1", "section": "Registration", "question": "Repeat these three words: APPLE, TABLE, PENNY.", "type": "recall", "expectedWords": ["apple","table","penny"], "score": 3 },
+
+    { "id": "att1", "section": "Attention", "question": "Spell 'WORLD' backwards.", "type": "multiple_choice", "options": ["DLROW","WROLD","DLOWR"], "correctOption": "DLROW", "score": 1 },
+
+    { "id": "rec1", "section": "Recall", "question": "Recall the three words from earlier.", "type": "recall", "expectedWords": ["apple","table","penny"], "score": 3 },
+
+    { "id": "name1", "section": "Language (Naming)", "question": "Name this object.", "type": "image", "imageUrl": "drawable:ic_clock", "acceptedAnswers": ["clock","watch"], "score": 1 },
+    { "id": "name2", "section": "Language (Naming)", "question": "Name this object.", "type": "image", "imageUrl": "drawable:ic_phone", "acceptedAnswers": ["phone","telephone","mobile"], "score": 1 },
+
+    { "id": "rep1", "section": "Language (Repetition)", "question": "Repeat exactly: No ifs, ands, or buts.", "type": "text", "expectedAnswer": "no ifs ands or buts", "score": 1 }
+  ]
+}

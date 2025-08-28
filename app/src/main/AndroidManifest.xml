@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AlzheimersCaregiver"
+        tools:replace="android:theme"
+        tools:targetApi="31">
+        <activity
+            android:name=".MedicationActivity"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".RemindersActivity"
+            android:label="Reminders"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".SplashGateActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <!-- Authentication Activity -->
+        <activity
+            android:name=".auth.AuthenticationActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AlzheimersCaregiver" />
+            
+        <!-- Patient Profile Activity -->
+        <activity
+            android:name=".PatientProfileActivity"
+            android:exported="false"
+            android:label="Patient Profile"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.AlzheimersCaregiver" />
+            
+        <activity android:name=".MainActivity" />
+        <activity android:name=".OnboardingActivity" />
+        <!-- ADD THIS: Tasks Activity -->
+        <activity
+            android:name=".TasksActivity"
+            android:exported="false"
+            android:label="Daily Tasks"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.AlzheimersCaregiver">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+        <activity
+            android:name=".PhotosActivity"
+            android:exported="false"
+            android:label="Family Photos"
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AlzheimersCaregiver">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+        <activity
+            android:name=".EmergencyActivity"
+            android:parentActivityName=".MainActivity"
+            android:label="Emergency Contacts" />
+        <receiver android:name=".notifications.ReminderReceiver" />
+        <receiver android:name=".notifications.TaskReminderReceiver" />
+        <receiver android:name=".notifications.MmseReminderReceiver" />
+        <receiver
+            android:name="com.mihir.alzheimerscaregiver.mmse.MmseScheduleManager$MmseScheduleReceiver"
+            android:exported="false" />
+        <!-- Game Selection Activity -->
+        <activity
+            android:name=".GameSelectionActivity"
+            android:label="Select a Game"
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
+        <!-- Matching Game Activity -->
+        <activity
+            android:name=".MatchingGameActivity"
+            android:label="Memory Game"
+            android:parentActivityName=".GameSelectionActivity"
+            android:screenOrientation="portrait"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".GameSelectionActivity" />
+        </activity>
+
+        <!-- Sequence Game Activity -->
+        <activity
+            android:name=".SequenceGameActivity"
+            android:label="Sequence Memory"
+            android:parentActivityName=".GameSelectionActivity"
+            android:screenOrientation="portrait"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".GameSelectionActivity" />
+        </activity>
+        <activity android:name=".MmseQuizActivity" />
+        <activity android:name=".MmseResultActivity" />
+        
+        <!-- Object Detection Activity -->
+        <activity
+            android:name=".ObjectDetectionActivity"
+            android:exported="false"
+            android:label="Object Detection"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.AlzheimersCaregiver">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+        
+        <!-- YOLOv9 Object Detection Activity -->
+        <activity
+            android:name="com.mihir.alzheimerscaregiver.objectdetection.MainActivity"
+            android:exported="false"
+            android:label="Object Detection Camera"
+            android:parentActivityName=".ObjectDetectionActivity"
+            tools:replace="android:exported" />
+    </application>
+
+</manifest>
