@@ -4,7 +4,7 @@
             "outputFile": "com.mihir.alzheimerscaregiver.caretaker.app-mergeDebugResources-35:/values-sl/values-sl.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\kolig\\.gradle\\caches\\transforms-3\\6df52a99ec39c8a6c297479eccaa5576\\transformed\\material-1.11.0\\res\\values-sl\\values-sl.xml",
+                    "source": "C:\\Users\\mihir\\.gradle\\caches\\transforms-3\\6df52a99ec39c8a6c297479eccaa5576\\transformed\\material-1.11.0\\res\\values-sl\\values-sl.xml",
                     "from": {
                         "startLines": "2,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -23,7 +23,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\kolig\\.gradle\\caches\\transforms-3\\bbdbc5911370b193e693fdb91c5cebe3\\transformed\\appcompat-1.6.1\\res\\values-sl\\values-sl.xml",
+                    "source": "C:\\Users\\mihir\\.gradle\\caches\\transforms-3\\bbdbc5911370b193e693fdb91c5cebe3\\transformed\\appcompat-1.6.1\\res\\values-sl\\values-sl.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -40,7 +40,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\kolig\\.gradle\\caches\\transforms-3\\defb5bbfd1b69bcdb77cfc0bba6add10\\transformed\\play-services-basement-18.1.0\\res\\values-sl\\values.xml",
+                    "source": "C:\\Users\\mihir\\.gradle\\caches\\transforms-3\\defb5bbfd1b69bcdb77cfc0bba6add10\\transformed\\play-services-basement-18.1.0\\res\\values-sl\\values.xml",
                     "from": {
                         "startLines": "4",
                         "startColumns": "0",
@@ -57,24 +57,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\kolig\\.gradle\\caches\\transforms-3\\4f2e35475fee0b05967cf35533701264\\transformed\\core-1.9.0\\res\\values-sl\\values-sl.xml",
-                    "from": {
-                        "startLines": "2",
-                        "startColumns": "4",
-                        "startOffsets": "55",
-                        "endColumns": "100",
-                        "endOffsets": "151"
-                    },
-                    "to": {
-                        "startLines": "126",
-                        "startColumns": "4",
-                        "startOffsets": "11421",
-                        "endColumns": "100",
-                        "endOffsets": "11517"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\kolig\\.gradle\\caches\\transforms-3\\c3dcc598d822a7ff1bdc5f558c723a48\\transformed\\play-services-base-18.0.1\\res\\values-sl\\values.xml",
+                    "source": "C:\\Users\\mihir\\.gradle\\caches\\transforms-3\\c3dcc598d822a7ff1bdc5f558c723a48\\transformed\\play-services-base-18.0.1\\res\\values-sl\\values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
                         "startColumns": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
@@ -91,7 +74,24 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\kolig\\.gradle\\caches\\transforms-3\\977ddb93cf4723cdb231c1116babc903\\transformed\\browser-1.4.0\\res\\values-sl\\values-sl.xml",
+                    "source": "C:\\Users\\mihir\\.gradle\\caches\\transforms-3\\4f2e35475fee0b05967cf35533701264\\transformed\\core-1.9.0\\res\\values-sl\\values-sl.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    },
+                    "to": {
+                        "startLines": "126",
+                        "startColumns": "4",
+                        "startOffsets": "11421",
+                        "endColumns": "100",
+                        "endOffsets": "11517"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\mihir\\.gradle\\caches\\transforms-3\\977ddb93cf4723cdb231c1116babc903\\transformed\\browser-1.4.0\\res\\values-sl\\values-sl.xml",
                     "from": {
                         "startLines": "2,3,4,5",
                         "startColumns": "4,4,4,4",
